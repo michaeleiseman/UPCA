@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Demo</title>
+</head>
+<body>
+    <input type="number" id="num">
+    <button id="double">Double it.</button>
+    <span id="output"></span>
+    <script>
+        let numField = document.getElementById("num");
+        let double = document.getElementById("double");
+        double.addEventListener('click', multiplyBy2, false);
+        //doubles whatever is in the input field and displays the result in the output
+        function multiplyBy2() {
+            document.getElementById("output").textContent = 2 * numField.value;
+        }
+    </script>
+</body>
+</html>

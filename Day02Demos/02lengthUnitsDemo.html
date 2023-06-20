@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Length Units</title>
+    <style>
+        .bold {
+            font-weight: bold;
+        }
+        .tagName {
+            color: #8181ff
+        }
+        .attribute {
+            color: cyan
+        }
+        .value {
+            color: pink
+        }
+        code {
+            color: white;
+            font-size: 18px;
+        }
+        .background {
+            background-color: black;
+            display: inline-flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+        .comment {
+            color: green;
+            font-size: 18px
+        }
+        .indent {
+            display: inline-flex;
+            flex-direction: column;
+            margin-left: 20px
+        }
+        .selector {
+            color: #cbbc71
+        }
+        .property {
+            color: cyan
+        }
+        #target {
+            border-color: black
+        }
+    </style>
+</head>
+<body>
+    <p>HTML:</p>
+    <div class="background">
+        <code>&lt;<span class="tagName">img</span> <span class="attribute">src</span>=<span class="value">"Yes.png"</span> <span class="attribute">alt</span>=<span class="value">"Mr. Mike giving thumbs up."</span>&gt;</code>
+    </div>
+    <p>CSS:</p>
+    <div class="background">
+        <code><span class="selector">img</span> {</code>
+        <div class="indent">
+            <code><span class="property">width</span>: 
+                <select class="width">
+                    <option value="200px" selected>200px</option>
+                    <option value="4em">4em</option>
+                    <option value="20%">20%</option>
+                    <option value="50%">50%</option>
+                </select>;
+            </code>
+        </div>
+        <code>}</code>
+    </div>
+    <p>Browser Display</p>
+    <img id="target" src="Yes.png" alt="Mr. Mike giving the thumbs up.">
+    <script>
+        const target = document.getElementById("target");
+        const selects = document.getElementsByTagName("select");
+        for(const select of selects){
+            select.addEventListener("change", function() {
+                target.style.setProperty(this.className, this.value);
+            }, false);
+        }
+    </script>
+</body>
+</html>

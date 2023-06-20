@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Animation Demo</title>
+</head>
+<body>
+    <canvas id="canvas" style="border: 1px solid black" width="300" height="300"></canvas>
+    <script>
+        let canvas = document.getElementById("canvas");
+        let ctx = canvas.getContext("2d");
+        //we want to make request animation frame a global variable
+        let raf;
+        class Ball {
+            constructor(x, y, dx, dy, radius, color) {
+                this.x = x;
+                this.y = y;
+                this.dx = dx;
+                this.dy = dy;
+                this.radius = radius;
+                this.color = color;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+        let autoBall = new Ball(100, 100, 2, 3, 20, "black");
+        let arrowBall = new Ball(200, 200, 0, 0, 20, "red");
+        document.addEventListener('keydown', manualMoveBall, false);
+        let clickBall = new Ball(150, 150, 0, 0, 20, "blue");
+        canvas.addEventListener('click', clickMoveBall, false);
+        let running = true;
+        moveBalls();
+        //this function responds to keyboard commands including moving the ball
+        //in any direction and pausing and restarting the animation
+        function manualMoveBall(event) {
+            let key = event.key;
+            if(key == "ArrowRight" && arrowBall.x < canvas.width - arrowBall.radius) {
+                arrowBall.x = arrowBall.x + 5;
+            }
+            if(key == "ArrowLeft" && arrowBall.x > arrowBall.radius) {
+                arrowBall.x = arrowBall.x - 5;
+            }
+            if(key == "ArrowUp" && arrowBall.y > arrowBall.radius) {
+                arrowBall.y = arrowBall.y - 5;
+            }
+            if(key == "ArrowDown" && arrowBall.y < canvas.height - arrowBall.radius) {
+                arrowBall.y = arrowBall.y + 5;
+            }
+            //this toggles the automatic movement of the autoBall
+            if(key == "Enter") {
+                running = !running;
+            }
+        }
+        function clickMoveBall(event) {
+            clickBall.x = event.offsetX;
+            clickBall.y = event.offsetY;
+        }
+        function autoMoveBall() {
+            autoBall.x = autoBall.x + autoBall.dx;
+            autoBall.y = autoBall.y + autoBall.dy;
+            //if the ball collides with either the left or right wall of the canvas
+            if(autoBall.x > canvas.width - autoBall.radius || autoBall.x < autoBall.radius) {
+                //reverse the direction of the x-component of the velocity of the ball
+                autoBall.dx = -autoBall.dx;
+            }
+            //if the ball collides with either the top or bottom wall of the canvas
+            if(autoBall.y > canvas.height - autoBall.radius || autoBall.y < autoBall.radius) {
+                //reverse the direction of the y-component of the velocity of the ball
+                autoBall.dy = -autoBall.dy;
+            }
+        }
+        function moveBalls() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if(running === true) {
+                autoMoveBall();
+            }
+            autoBall.draw();
+            arrowBall.draw();
+            clickBall.draw();
+            raf = window.requestAnimationFrame(moveBalls);
+        }
+    </script>
+</body>
+</html>

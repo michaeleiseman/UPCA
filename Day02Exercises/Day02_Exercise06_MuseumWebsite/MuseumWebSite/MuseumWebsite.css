@@ -1,0 +1,11 @@
+body {
+    margin: 0px;
+}
+
+a, a:visited{
+    color:white
+}
+.artWorkContainer {
+    float: left;
+    width: 400px;
+}
