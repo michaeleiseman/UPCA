@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Animation</title>
+</head>
+<body>
+    <canvas id="canvas" style="border: 1px solid black" width="300" height="300"></canvas>
+    <script>
+        let canvas = document.getElementById("canvas");
+        let ctx = canvas.getContext("2d");
+        let ballRadius = 20;
+        class Ball {
+            //These are the ball properties
+            constructor(x, y, radius, color) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+            }
+            //This method will draw the ball on the canvas as specified by its properties
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+        let balls = [];
+        //create 20 random balls and put them in the balls array
+        for(let i = 0; i < 20; i++) {
+            balls.push(createRandomBall());
+        }
+        //this function returns a randomly colored ball in a random position on the canvas
+        //and draws it on the canvas
+        function createRandomBall() {
+            let x = Math.floor((canvas.width - 2 * ballRadius) * Math.random() + 20);
+            let y = Math.floor((canvas.height - 2 * ballRadius) * Math.random() + 20);
+            let r = Math.floor(256 * Math.random());
+            let g = Math.floor(256 * Math.random());
+            let b = Math.floor(256 * Math.random());
+            let ball = new Ball(x, y, ballRadius, "rgb(" + r + ", " + g + ", " + b + ")");
+            ball.draw();
+            return ball;
+        }
+        document.addEventListener('keydown', moveBall, false);
+        function moveBall(event) {
+            //clear the drawing canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            //use the EVENT to record which key was pressed
+            let key = event.key;
+            //loop through each ball of the balls array
+            for(let ball of balls) {
+                //if the user pressed the right arrow, the ball should move to the right
+                    //If the ball goes past the right border, it should go back to the left border
+                if(key == "ArrowRight") {
+                    ball.x = (ball.x + 5) % canvas.width;
+                }
+                //if the user pressed the left arrow, the ball should move to the left
+                    //If the ball goes past the left border, it should go back to the right border
+                if(key == "ArrowLeft") {
+                    ball.x = ball.x - 5;
+                    if(ball.x < 0) {
+                        ball.x = canvas.width;
+                    }
+                }
+                //if the user pressed the up arrow, the ball should move up
+                    //If the ball goes past the top border, it should go back to the bottom border
+                if(key == "ArrowUp") {
+                    ball.y = ball.y - 5;
+                    if(ball.y < 0) {
+                        ball.y = canvas.height;
+                    }
+                }
+                //if the user pressed the down arrow, the ball should move down
+                    //If the ball goes past the bottom border, it should go back to the top border
+                if(key == "ArrowDown") {
+                    ball.y = (ball.y + 5) % canvas.height;
+                }
+                //draw the ball using its draw() method
+                ball.draw();
+            }
+        }
+    </script> 
+</body>
+</html>
