@@ -1,0 +1,11 @@
+.card {
+    width: 200px;
+    height: 300px
+}
+h1, h3 {
+    text-align: center;
+}
+img {
+    display: block;
+    margin: auto;
+}

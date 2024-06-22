@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breakout I</title>
+    <style>
+        #ballCourt {
+            position: absolute;
+            border: 1px solid black
+        }
+        #brickArea {
+            position:absolute
+        }
+        #paddleArea {
+            position: absolute;
+            top: 593px
+        }
+    </style>
+</head>
+<body>
+    <canvas id="ballCourt" width="400" height="600"></canvas>
+    <canvas id="brickArea" width="400" height="100"></canvas>
+    <canvas id="paddleArea" width="400" height="10"></canvas>
+    <script>
+        class Board {
+            constructor(court, brickArea, paddleArea, rowsOfBricks, bricksPerRow, brickGap, brickHeight, paddleHeight, ballRadius, paddleWidth, ballX, ballY, ballVx, ballVy) {
+                this.court = court;
+                this.brickArea = brickArea,
+                this.paddleArea = paddleArea,
+                this.width = court.width;
+                this.height = court.height;
+                this.courtctx = court.getContext("2d");
+                this.brickctx = brickArea.getContext("2d");
+                this.paddlectx = paddleArea.getContext("2d");
+                this.rowsOfBricks = rowsOfBricks;
+                this.bricsPerRow = bricksPerRow;
+                this.brickGap = brickGap;
+                this.brickHeight = brickHeight;
+                this.brickWidth = (this.width - (bricksPerRow + 1) * brickGap) / bricksPerRow;
+                this.init = function() {
+                    this.bricks = this.buildBricks();
+                };
+                this.init();
+                this.paddleHeight = paddleHeight;
+                this.ballRadius = ballRadius;
+                this.paddle = new Paddle(this.width / 2, paddleWidth, paddleHeight, this.paddlectx);
+                this.ball = new Ball(ballX, ballY, ballVx, ballVy, ballRadius, this.courtctx, this.bricks, this.paddle);
+            }
+            buildBricks() {
+                let bricks = [];
+                for(let y = this.brickGap; y < this.rowsOfBricks * (this.brickGap + this.brickHeight); y = y + this.brickGap + this.brickHeight) {
+                    for(let x = this.brickGap; x < this.width - this.brickGap; x = x + this.brickWidth + this.brickGap) {
+                        let brick = new Brick(x, y, this.brickWidth, this.brickHeight, this.brickctx, this);
+                        brick.draw();
+                        bricks.push(brick);
+                    }
+                }
+                return bricks;
+            }
+            remove(brick) {
+                brick.clear();
+                this.bricks.splice(this.bricks.indexOf(brick), 1);
+            }
+        }
+        class Brick {
+            constructor(x, y, brickWidth, brickHeight, brickctx) {
+                this.x = x;
+                this.y = y;
+                this.width = brickWidth;
+                this.height = brickHeight;
+                this.brickctx = brickctx;
+                this.draw();
+            }
+            draw() {
+                this.brickctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+            clear() {
+                this.brickctx.clearRect(this.x - 1, this.y - 1, this.width + 2, this.height + 2);
+            }
+        }
+        class Paddle {
+            constructor(centerX, width, paddleHeight, paddlectx) {
+                this.x = centerX - width / 2;
+                this.width = width;
+                this.height = paddleHeight;
+                this.paddlectx = paddlectx;
+                this.raf = null;
+                this.delta = 10;
+                this.draw();
+            }
+            draw() {
+                this.paddlectx.fillRect(this.x , 0, this.width, this.height);
+            }
+            determinePaddleDelta(event) {
+                event.preventDefault();
+                let key = event.key;
+                if(key !== "ArrowRight" && key !== "ArrowLeft") {
+                    return;
+                }
+                window.removeEventListener('keydown', gameBoard.paddle.determinePaddleDelta, false);
+                window.addEventListener('keyup', gameBoard.paddle.stopMoving, false)
+                
+                gameBoard.paddle.delta = 10;
+                if(key === "ArrowLeft") {
+                    gameBoard.paddle.delta = -10;
+                }
+                gameBoard.paddle.move();
+            }
+            move() {
+                this.paddlectx.clearRect(this.x, 0, this.width, this.height);
+                this.x = this.x + gameBoard.paddle.delta;
+                this.draw(this.paddlectx);
+                this.raf = window.requestAnimationFrame(this.move)
+            }
+            stopMoving() {
+                this.removeEventListener('keyup', gameBoard.paddle.stopMoving, false);
+                window.cancelAnimationFrame(gameBoard.paddle.raf);
+                window.addEventListener('keydown', gameBoard.paddle.determinePaddleDelta, false);
+
+            }
+        }
+        class Ball {
+            constructor(x, y, vx, vy, radius, ctx, bricks, paddle) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.radius = radius;
+                this.ctx = ctx;
+                this.bricks = bricks;
+                this.paddle = paddle;
+                this.draw(ctx);
+                this.raf;
+            }
+            draw(ctx) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fillStyle = "black";
+                ctx.fill();
+            }
+            move() {
+                gameBoard.courtctx.clearRect(0, 0, 400, 600);
+                gameBoard.ball.x = gameBoard.ball.x + gameBoard.ball.vx;
+                gameBoard.ball.y = gameBoard.ball.y + gameBoard.ball.vy;
+                gameBoard.ball.adjustVelocityForCollisionWithWall();
+                gameBoard.ball.checkForCollisionWithBricks();
+                gameBoard.ball.draw(gameBoard.courtctx);
+                if(gameBoard.ball.y >= 593 - gameBoard.ball.radius) {
+                    gameBoard.ball.adjustVelocityForCollisionWithPaddle();
+                }
+                
+                if(gameBoard.ball.y > gameBoard.height || gameBoard.ball.bricks.length === 0) {
+                    window.cancelAnimationFrame(gameBoard.raf);
+                } else {
+                    gameBoard.raf = window.requestAnimationFrame(gameBoard.ball.move);
+                }
+            }
+            adjustVelocityForCollisionWithWall() {
+                if (this.y + this.vy < this.radius) {
+                    this.vy = -this.vy;
+                }
+                if (this.x + this.vx > gameBoard.width - this.radius || this.x + this.vx < this.radius) {
+                    this.vx = -this.vx;
+                }
+            }
+            checkForCollisionWithBricks() {
+                for(let brick of this.bricks) {
+                    if(this.hasCollidedWithBrick(brick)) {
+                        this.adjustVelocityForCollisionWithBrick(brick);
+                        return;
+                    }
+                }
+            }
+            hasCollidedWithBrick(brick) {
+                return this.x > brick.x - this.radius && this.x < brick.x + brick.width + this.radius && this.y < brick.y + brick.height + this.radius && this.y > brick.y - this.radius;
+            }
+            adjustVelocityForCollisionWithBrick(brick) {
+                if(this.x > brick.x && this.x < brick.x + brick.width) {
+                    this.vy = -this.vy;
+                } else {
+                    this.vx = - this.vx;
+                }
+                gameBoard.remove(brick);
+            }
+            adjustVelocityForCollisionWithPaddle() {
+                if(this.x < this.paddle.x || this.x > this.paddle.x + this.paddle.width) {
+                    return;
+                }
+                this.vy = - this.vy;
+                this.vx = Math.floor(10 * (this.x - this.paddle.x)/this.paddle.width - 5);
+            }
+        }
+        let gameBoard = new Board(document.getElementById("ballCourt"), document.getElementById("brickArea"), document.getElementById("paddleArea"), 6, 10, 5, 10, 10, 20, 200, 300, 300, 2, -1);
+        document.addEventListener('keydown', gameBoard.paddle.determinePaddleDelta, false);
+        gameBoard.raf = window.requestAnimationFrame(gameBoard.ball.move);
+
+    </script>
+</body>
+</html>

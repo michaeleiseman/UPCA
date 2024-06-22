@@ -1,0 +1,15 @@
+.card {
+    width: 200px;
+    height: 300px
+}
+h1, h3 {
+    text-align: center;
+}
+img {
+    display: block;
+    margin:auto
+}
+p {
+    /* You'll need to clear this to put it
+    on its own line */
+}
