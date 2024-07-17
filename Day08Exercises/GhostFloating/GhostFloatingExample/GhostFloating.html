@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Chase</title>
+    <style>
+        svg {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <svg id="canvas" width="1000" height="600" viewbox="0 0 1000 600">
+        <use id="redGhost" x="200" y="200" href="#ghost" fill="red"/>
+        <defs>
+            <g id="ghost">
+                <circle cx="60" cy="60" r="60"/>
+                <rect  x="0" y="60" width="120" height="100"/>
+                <circle cx="20" cy="160" r="20"/>
+                <circle cx="60" cy="160" r="20"/>
+                <circle cx="100" cy="160" r="20"/>
+                <circle cx="35" cy="60" r="10" fill="white" />
+                <circle cx="85" cy="60" r="10" fill="white" />
+                <circle cx="40" cy="60" r="5" fill="blue" />
+                <circle cx="90" cy="60" r="5" fill="blue" />
+            </g>
+        </defs>
+    </svg>
+    <script>
+        let ghost = document.getElementById("redGhost");
+        let x = 260;
+        let y = 260;
+        let vMax = 0.4;
+        let dt = 30;
+        document.getElementById("canvas").addEventListener('mousemove', globalizeMouseCoordinates, false);
+        function globalizeMouseCoordinates(event) {
+            x = event.offsetX;
+            y = event.offsetY;
+        }
+        //set an Interval timer to move the ghost. You'll need to reference a callback
+        //function here.
+        let time = setInterval(moveGhost, dt);
+        //create a call back function that changes the "x" attribute of the ghost every
+        //time it is called. You should be able to get the "x" attribute of the ghost by
+        //using ghost.getAttribute("x"), and you should be able to set the "x" attribute
+        //of the ghost to a value using ghost.setAttribute("x", value).
+        function moveGhost() {
+            //let (xGhost, yGhost) be the coordinates of the center of the
+            //ghost's head.
+            //We add 60 to the x and y coordinates because the center of the 
+            //ghost's head is 60 pixels down and to the right of the upper-left-hand
+            //corner of the entire ghost.
+            let xGhost = Number(ghost.getAttribute("x")) + 60;
+            let yGhost = Number(ghost.getAttribute("y")) + 60;
+            let mouseToGhostDistanceSquared = (x - xGhost)**2 + (y - yGhost)**2;
+            let v = vMax;
+            //This slows the ghost down when the ghost gets close to the mouse
+            if(mouseToGhostDistanceSquared < 3600) {
+                v = vMax * mouseToGhostDistanceSquared / 3600;
+            }
+            let dXGhost = 0;
+            let dYGhost = 0;
+            if(x != xGhost) {
+                let m = (y - yGhost) / (x - xGhost);
+                dXGhost = Math.sign(x - xGhost) * v * dt / Math.sqrt(1 + m * m);
+                dYGhost = m * dXGhost;
+            } else {
+                dYGhost = Math.sign(y - yGhost) * v * dt;
+            }
+            newXGhost = dXGhost + xGhost - 60;
+            newYGhost = dYGhost + yGhost - 60;
+            ghost.setAttribute("x", newXGhost.toString());
+            ghost.setAttribute("y", newYGhost.toString());
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Eyes</title>
+    <style>
+        svg {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <svg id="canvas" width="1000" height="600" viewbox="0 0 1000 600"></svg>
+    <script>
+        let canvas = document.getElementsByTagName("svg")[0];
+        canvas.addEventListener('click', addRandomGhost, false)
+        canvas.addEventListener('mousemove', moveEyes, false)
+        let ghosts = [];
+        let colors = ["red", "green", "blue", "yellow", "cyan", "magenta", "black", "purple", "orange"];
+        let eyeRadius = 20;
+        let pupilRadius = 10;
+        let headRadius = 60;
+        let bodyWidth = 2 * headRadius;
+        let bodyHeight = 100;
+        let eyeSpacing = 25; //from center of head
+
+        
+        function addRandomGhost(event) {
+            let cx = event.offsetX;
+            let cy = event.offsetY;
+            let color = colors[Math.floor(colors.length * Math.random())];
+            let ghost = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            //add the head
+            ghost.appendChild(createCircle(cx, cy, headRadius, color));
+            //add the body
+            let body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            body.setAttribute("x", (cx - 60).toString());
+            body.setAttribute("y", cy.toString());
+            body.setAttribute("width", bodyWidth)
+            body.setAttribute("height", bodyHeight);
+            body.setAttribute("fill", color);
+            ghost.appendChild(body);
+            //add the left eye
+            ghost.appendChild(createCircle(cx - eyeSpacing, cy, eyeRadius, "white"));
+            //add the right eye
+            ghost.appendChild(createCircle(cx + eyeSpacing, cy, eyeRadius, "white"));
+            //add the left pupil
+            ghost.appendChild(createCircle(cx - eyeSpacing, cy, pupilRadius, "blue"));
+            //add the right pupil
+            ghost.appendChild(createCircle(cx + eyeSpacing, cy, pupilRadius, "blue"));
+            //add the feet
+            ghost.appendChild(createCircle(cx - bodyWidth / 3, cy + bodyHeight, bodyWidth / 6, color));
+            ghost.appendChild(createCircle(cx, cy + bodyHeight, bodyWidth / 6, color));
+            ghost.appendChild(createCircle(cx + bodyWidth / 3, cy + bodyHeight, bodyWidth / 6, color));
+            canvas.appendChild(ghost);
+            ghosts.push(ghost);
+
+        }
+        function createCircle(cx, cy, r, color) {
+            let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", cx.toString());
+            circle.setAttribute("cy", cy.toString());
+            circle.setAttribute("r", r.toString());
+            circle.setAttribute("fill", color);
+            return circle;
+        }
+        function moveEyes(event) {
+            let xMouse = event.offsetX;
+            let yMouse = event.offsetY;
+            for(ghost of ghosts) {
+                for(let i = 1; i < 3; i++) {
+                    let eye = ghost.getElementsByTagName("circle")[i];
+                    let pupil = ghost.getElementsByTagName("circle")[i + 2];
+                    let cx = Number(eye.getAttribute("cx"));
+                    let cy = Number(eye.getAttribute("cy"));
+                    let dxPupil = 0;
+                    let dyPupil = 0;
+                    if(cx == xMouse) {
+                        dyPupil = Math.sign(yMouse - cy) * (eyeRadius - pupilRadius);
+                    } else {
+                        let m = (yMouse - cy) / (xMouse - cx);
+                        dxPupil = Math.sign(xMouse - cx) * (eyeRadius - pupilRadius) / Math.sqrt(1 + m * m);
+                        dyPupil = m * dxPupil;
+                    }
+                    let newXPupil = dxPupil + cx;
+                    let newYPupil = dyPupil + cy;
+                    pupil.setAttribute("cx", newXPupil.toString());
+                    pupil.setAttribute("cy", newYPupil.toString())
+                }
+            }
+        }
+    </script>
+</body>
+</html>
